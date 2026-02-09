@@ -1,0 +1,106 @@
+body {
+  margin: 0;
+  font-family: Segoe UI;
+  background: #f4f6fb;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 230px;
+  background: #111827;
+  color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.sidebar button:hover {
+  background: #1f2937;
+}
+
+.main {
+  flex: 1;
+  padding: 30px;
+  overflow: auto;
+}
+
+.page {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+.stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.statCard {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.quickActions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+input,
+select {
+  padding: 10px;
+  margin-top: 10px;
+}
+
+button {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.dark {
+  background: #0f172a;
+  color: white;
+}
