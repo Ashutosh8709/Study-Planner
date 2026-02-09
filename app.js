@@ -18,6 +18,18 @@ function show(id) {
   document.getElementById(id).classList.add("active");
 }
 
+function showToast(msg) {
+  let toast = document.getElementById("toast");
+  if (!toast) return alert(msg);
+
+  toast.innerText = msg;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2000);
+}
+
 function addSubject() {
   let name = document.getElementById("subjectName").value;
   let priority = document.getElementById("priority").value;
@@ -25,6 +37,7 @@ function addSubject() {
   if (!name) return;
 
   subjects.push({ name, priority });
+
   renderSubjects();
   save();
 }
@@ -32,6 +45,10 @@ function addSubject() {
 function renderSubjects() {
   let list = document.getElementById("subjectList");
   list.innerHTML = "";
+
+  // auto sort by priority
+  const order = { High: 1, Medium: 2, Low: 3 };
+  subjects.sort((a, b) => order[a.priority] - order[b.priority]);
 
   subjects.forEach((s, i) => {
     list.innerHTML += `
@@ -54,8 +71,9 @@ function addSchedule() {
   let topic = document.getElementById("studyTopic").value;
 
   let conflict = schedules.find((s) => s.day === day && s.time === time);
+
   if (conflict) {
-    alert("Time conflict!");
+    showToast("⚠️ Time conflict detected!");
     return;
   }
 
@@ -67,29 +85,36 @@ function addSchedule() {
   });
 
   renderSchedule();
+  renderCalendar();
   save();
+  showToast("Study slot added ✅");
 }
 
 function toggleSchedule(i) {
   schedules[i].completed = !schedules[i].completed;
   renderSchedule();
+  renderCalendar();
   save();
 }
 
 function deleteSchedule(i) {
   schedules.splice(i, 1);
   renderSchedule();
+  renderCalendar();
   save();
 }
 
 function renderSchedule() {
   let list = document.getElementById("scheduleList");
+  if (!list) return;
+
   list.innerHTML = "";
 
   schedules.forEach((s, i) => {
     list.innerHTML += `
 <li class="${s.completed ? "completed" : ""}">
-<input type="checkbox" ${s.completed ? "checked" : ""}
+<input type="checkbox"
+${s.completed ? "checked" : ""}
 onclick="toggleSchedule(${i})">
 
 ${s.day} ${s.time} - ${s.topic}
@@ -97,6 +122,53 @@ ${s.day} ${s.time} - ${s.topic}
 <button onclick="deleteSchedule(${i})">Delete</button>
 </li>`;
   });
+}
+
+const days = ["Time", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function renderCalendar() {
+  let calendar = document.getElementById("calendar");
+  if (!calendar) return;
+
+  calendar.innerHTML = "";
+
+  days.forEach((d) => {
+    calendar.innerHTML += `<div class="cell header">${d}</div>`;
+  });
+
+  let times = ["09:00", "10:00", "11:00", "12:00", "13:00"];
+
+  times.forEach((time) => {
+    calendar.innerHTML += `<div class="cell header">${time}</div>`;
+
+    for (let i = 1; i < days.length; i++) {
+      let slot = schedules.find((s) => s.day === days[i] && s.time === time);
+
+      calendar.innerHTML += `
+<div class="cell ${slot?.completed ? "completed" : ""}">
+${
+  slot
+    ? `<input type="checkbox"
+${slot.completed ? "checked" : ""}
+onclick="toggleCalendar('${days[i]}','${time}')">
+
+${slot.topic}`
+    : ""
+}
+</div>`;
+    }
+  });
+}
+
+function toggleCalendar(day, time) {
+  let index = schedules.findIndex((s) => s.day === day && s.time === time);
+
+  if (index > -1) {
+    schedules[index].completed = !schedules[index].completed;
+    renderSchedule();
+    renderCalendar();
+    save();
+  }
 }
 
 function addTask() {
@@ -114,6 +186,8 @@ function addTask() {
   renderTasks();
   checkReminders();
   save();
+
+  showToast("Task added 📌");
 }
 
 function toggleTask(i) {
@@ -135,7 +209,6 @@ function renderTasks() {
   tasks.forEach((t, i) => {
     list.innerHTML += `
 <li class="${t.completed ? "completed" : ""}">
-
 <input type="checkbox"
 ${t.completed ? "checked" : ""}
 onclick="toggleTask(${i})">
@@ -143,7 +216,6 @@ onclick="toggleTask(${i})">
 ${t.name} - ${t.deadline}
 
 <button onclick="deleteTask(${i})">Delete</button>
-
 </li>`;
   });
 }
@@ -153,7 +225,7 @@ function checkReminders() {
 
   tasks.forEach((t) => {
     if (t.deadline === today && !t.completed) {
-      alert("Reminder: " + t.name + " due today!");
+      showToast("Reminder: " + t.name + " due today!");
     }
   });
 }
@@ -162,10 +234,11 @@ function updateDashboard() {
   document.getElementById("totalSubjects").innerText = subjects.length;
 
   let pending = tasks.filter((t) => !t.completed).length;
-
   document.getElementById("totalTasks").innerText = pending;
 
-  let today = new Date().toLocaleDateString("en-US", { weekday: "short" });
+  let today = new Date().toLocaleDateString("en-US", {
+    weekday: "short",
+  });
 
   let todayList = schedules.filter((s) => s.day === today);
 
@@ -180,18 +253,20 @@ function updateAnalytics() {
     ? Math.round((completedTasks / totalTasks) * 100)
     : 0;
 
-  let insight = "Keep going!";
+  let insight = "Start building momentum 🚀";
 
-  if (percentage > 70) insight = "🔥 Amazing productivity!";
+  if (percentage > 70) insight = "🔥 Excellent consistency!";
   else if (percentage > 40) insight = "👍 Good progress!";
-  else insight = "📈 Try completing more tasks!";
+  else if (percentage > 10) insight = "Keep pushing forward!";
 
   document.getElementById("analyticsData").innerHTML = `
-Total Tasks: ${totalTasks}<br>
-Completed: ${completedTasks}<br>
-Completion Rate: ${percentage}%<br><br>
+Completion Rate: ${percentage}%
 
-${insight}
+<div class="progressBar">
+<div class="progressFill" style="width:${percentage}%"></div>
+</div>
+
+<br>${insight}
 `;
 }
 
@@ -201,7 +276,9 @@ function toggleTheme() {
 
 function exportData() {
   let data = { subjects, schedules, tasks };
-  let blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  let blob = new Blob([JSON.stringify(data)], {
+    type: "application/json",
+  });
   let a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "studyplanner.json";
@@ -215,6 +292,7 @@ function resetData() {
 
 renderSubjects();
 renderSchedule();
+renderCalendar();
 renderTasks();
 updateDashboard();
 updateAnalytics();

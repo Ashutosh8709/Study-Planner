@@ -104,3 +104,55 @@ button {
   background: #0f172a;
   color: white;
 }
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  margin-top: 20px;
+  gap: 5px;
+}
+
+.cell {
+  background: white;
+  padding: 10px;
+  border-radius: 6px;
+  min-height: 60px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  font-weight: bold;
+  text-align: center;
+  background: #6366f1;
+  color: white;
+}
+
+.progressBar {
+  height: 10px;
+  background: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progressFill {
+  height: 100%;
+  background: #10b981;
+  width: 0%;
+  transition: 0.5s;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #111827;
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: 0.4s;
+}
+
+.toast.show {
+  opacity: 1;
+}
