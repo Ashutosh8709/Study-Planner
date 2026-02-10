@@ -135,7 +135,20 @@ function renderCalendar() {
     calendar.innerHTML += `<div class="cell header">${d}</div>`;
   });
 
-  let times = ["09:00", "10:00", "11:00", "12:00", "13:00"];
+  let times = [
+    "01:00",
+    "02:00",
+    "03:00",
+    "04:00",
+    "05:00",
+    "06:00",
+    "07:00",
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+  ];
 
   times.forEach((time) => {
     calendar.innerHTML += `<div class="cell header">${time}</div>`;
@@ -185,7 +198,6 @@ function addTask() {
   renderTasks();
   checkReminders();
   save();
-
   showToast("Task added");
 }
 
