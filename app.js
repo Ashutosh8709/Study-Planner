@@ -46,7 +46,6 @@ function renderSubjects() {
   let list = document.getElementById("subjectList");
   list.innerHTML = "";
 
-  // auto sort by priority
   const order = { High: 1, Medium: 2, Low: 3 };
   subjects.sort((a, b) => order[a.priority] - order[b.priority]);
 
@@ -73,7 +72,7 @@ function addSchedule() {
   let conflict = schedules.find((s) => s.day === day && s.time === time);
 
   if (conflict) {
-    showToast("⚠️ Time conflict detected!");
+    showToast("Time conflict detected!");
     return;
   }
 
@@ -87,7 +86,7 @@ function addSchedule() {
   renderSchedule();
   renderCalendar();
   save();
-  showToast("Study slot added ✅");
+  showToast("Study slot added");
 }
 
 function toggleSchedule(i) {
@@ -187,7 +186,7 @@ function addTask() {
   checkReminders();
   save();
 
-  showToast("Task added 📌");
+  showToast("Task added");
 }
 
 function toggleTask(i) {
@@ -253,10 +252,10 @@ function updateAnalytics() {
     ? Math.round((completedTasks / totalTasks) * 100)
     : 0;
 
-  let insight = "Start building momentum 🚀";
+  let insight = "Start building momentum";
 
-  if (percentage > 70) insight = "🔥 Excellent consistency!";
-  else if (percentage > 40) insight = "👍 Good progress!";
+  if (percentage > 70) insight = "Excellent consistency!";
+  else if (percentage > 40) insight = "Good progress!";
   else if (percentage > 10) insight = "Keep pushing forward!";
 
   document.getElementById("analyticsData").innerHTML = `
