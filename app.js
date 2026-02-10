@@ -9,6 +9,7 @@ function save() {
 
   updateDashboard();
   updateAnalytics();
+  renderDashboardLists(); // ⭐ dashboard lists refresh
 }
 
 function show(id) {
@@ -20,14 +21,16 @@ function show(id) {
 
 function showToast(msg) {
   let toast = document.getElementById("toast");
-  if (!toast) return alert(msg);
+
+  if (!toast) {
+    alert(msg);
+    return;
+  }
 
   toast.innerText = msg;
   toast.classList.add("show");
 
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2000);
+  setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
 function addSubject() {
@@ -47,6 +50,7 @@ function renderSubjects() {
   list.innerHTML = "";
 
   const order = { High: 1, Medium: 2, Low: 3 };
+
   subjects.sort((a, b) => order[a.priority] - order[b.priority]);
 
   subjects.forEach((s, i) => {
@@ -86,11 +90,13 @@ function addSchedule() {
   renderSchedule();
   renderCalendar();
   save();
+
   showToast("Study slot added");
 }
 
 function toggleSchedule(i) {
   schedules[i].completed = !schedules[i].completed;
+
   renderSchedule();
   renderCalendar();
   save();
@@ -98,6 +104,7 @@ function toggleSchedule(i) {
 
 function deleteSchedule(i) {
   schedules.splice(i, 1);
+
   renderSchedule();
   renderCalendar();
   save();
@@ -135,32 +142,10 @@ function renderCalendar() {
     calendar.innerHTML += `<div class="cell header">${d}</div>`;
   });
 
-  let times = [
-    "01:00",
-    "02:00",
-    "03:00",
-    "04:00",
-    "05:00",
-    "06:00",
-    "07:00",
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00",
-    "22:00",
-    "23:00",
-    "24:00",
-  ];
+  let times = Array.from(
+    { length: 24 },
+    (_, i) => String(i + 1).padStart(2, "0") + ":00",
+  );
 
   times.forEach((time) => {
     calendar.innerHTML += `<div class="cell header">${time}</div>`;
@@ -172,7 +157,8 @@ function renderCalendar() {
 <div class="cell ${slot?.completed ? "completed" : ""}">
 ${
   slot
-    ? `<input type="checkbox"
+    ? `
+<input type="checkbox"
 ${slot.completed ? "checked" : ""}
 onclick="toggleCalendar('${days[i]}','${time}')">
 
@@ -189,6 +175,7 @@ function toggleCalendar(day, time) {
 
   if (index > -1) {
     schedules[index].completed = !schedules[index].completed;
+
     renderSchedule();
     renderCalendar();
     save();
@@ -210,23 +197,28 @@ function addTask() {
   renderTasks();
   checkReminders();
   save();
+
   showToast("Task added");
 }
 
 function toggleTask(i) {
   tasks[i].completed = !tasks[i].completed;
+
   renderTasks();
   save();
 }
 
 function deleteTask(i) {
   tasks.splice(i, 1);
+
   renderTasks();
   save();
 }
 
 function renderTasks() {
   let list = document.getElementById("taskList");
+  if (!list) return;
+
   list.innerHTML = "";
 
   tasks.forEach((t, i) => {
@@ -243,29 +235,93 @@ ${t.name} - ${t.deadline}
   });
 }
 
-function checkReminders() {
-  let today = new Date().toISOString().split("T")[0];
-
-  tasks.forEach((t) => {
-    if (t.deadline === today && !t.completed) {
-      showToast("Reminder: " + t.name + " due today!");
-    }
-  });
-}
-
 function updateDashboard() {
   document.getElementById("totalSubjects").innerText = subjects.length;
 
   let pending = tasks.filter((t) => !t.completed).length;
   document.getElementById("totalTasks").innerText = pending;
 
-  let today = new Date().toLocaleDateString("en-US", {
-    weekday: "short",
-  });
+  const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  let today = dayMap[new Date().getDay()];
 
   let todayList = schedules.filter((s) => s.day === today);
 
   document.getElementById("todaySlots").innerText = todayList.length;
+}
+
+function renderDashboardLists() {
+  const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  let today = dayMap[new Date().getDay()];
+
+  let todayEl = document.getElementById("todaySchedule");
+
+  if (todayEl) {
+    todayEl.innerHTML = "";
+
+    let todayList = schedules.filter((s) => s.day === today);
+
+    if (todayList.length === 0) {
+      todayEl.innerHTML = "<li>No study slots today</li>";
+    } else {
+      todayList.forEach((s) => {
+        todayEl.innerHTML += `
+<li class="${s.completed ? "completed" : ""}">
+${s.time} - ${s.topic}
+</li>`;
+      });
+    }
+  }
+
+  let upcomingEl = document.getElementById("upcomingDeadlines");
+
+  if (upcomingEl) {
+    upcomingEl.innerHTML = "";
+
+    let todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+
+    let upcoming = tasks.filter((t) => {
+      if (!t.deadline || t.completed) return false;
+
+      let d = new Date(t.deadline);
+      d.setHours(0, 0, 0, 0);
+
+      let diff = (d - todayDate) / (1000 * 60 * 60 * 24);
+
+      return diff >= 0 && diff <= 7;
+    });
+
+    if (upcoming.length === 0) {
+      upcomingEl.innerHTML = "<li>No upcoming deadlines</li>";
+    } else {
+      upcoming.forEach((t) => {
+        upcomingEl.innerHTML += `
+<li>${t.name} - ${t.deadline}</li>`;
+      });
+    }
+  }
+}
+
+function checkReminders() {
+  let today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  tasks.forEach((t) => {
+    if (!t.deadline || t.completed) return;
+
+    let d = new Date(t.deadline);
+    d.setHours(0, 0, 0, 0);
+
+    let diff = (d - today) / (1000 * 60 * 60 * 24);
+
+    if (diff === 0) {
+      showToast("Reminder: " + t.name + " due today!");
+    } else if (diff <= 2 && diff > 0) {
+      showToast("Upcoming: " + t.name + " due soon!");
+    }
+  });
 }
 
 function updateAnalytics() {
@@ -289,8 +345,7 @@ Completion Rate: ${percentage}%
 <div class="progressFill" style="width:${percentage}%"></div>
 </div>
 
-<br>${insight}
-`;
+<br>${insight}`;
 }
 
 function toggleTheme() {
@@ -299,10 +354,11 @@ function toggleTheme() {
 
 function exportData() {
   let data = { subjects, schedules, tasks };
-  let blob = new Blob([JSON.stringify(data)], {
-    type: "application/json",
-  });
+
+  let blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+
   let a = document.createElement("a");
+
   a.href = URL.createObjectURL(blob);
   a.download = "studyplanner.json";
   a.click();
@@ -319,3 +375,5 @@ renderCalendar();
 renderTasks();
 updateDashboard();
 updateAnalytics();
+renderDashboardLists();
+checkReminders();
